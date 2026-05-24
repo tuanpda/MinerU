@@ -971,10 +971,14 @@ async def _run_to_markdown_job(
         response_format_zip=True,
         return_original_file=True,
     )
+    # Short multipart filename so server output paths stay under Windows MAX_PATH
+    # (long Vietnamese stems under %Temp% otherwise fail with ENOENT on open).
+    _src = Path(file_path)
+    _suf = _src.suffix if _src.suffix else ".pdf"
     upload_assets = [
         _api_client.UploadAsset(
             path=Path(file_path),
-            upload_name=build_gradio_upload_name(file_path),
+            upload_name=f"mineru_{uuid.uuid4().hex}{_suf}",
         )
     ]
 

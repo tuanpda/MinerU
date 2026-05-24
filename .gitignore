@@ -2,6 +2,11 @@
 *.tar.gz
 *.zip
 venv*/
+.venv/
+.env/
+.coverage
+samples/
+output/
 envs/
 slurm_logs/
 
@@ -54,6 +59,3 @@ debug_utils/
 
 # sphinx docs
 _build/
-
-
-output/

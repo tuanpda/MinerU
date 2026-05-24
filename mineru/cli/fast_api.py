@@ -826,7 +826,10 @@ async def run_parse_job(
     actual_lang_list = normalize_lang_list(request_options.lang_list, len(pdf_file_names))
     response_file_names = list(pdf_file_names)
 
-    parse_kwargs = dict(
+    # Merge model/VLM kwargs from app.state.config, but never let them override
+    # request-driven output flags (draw bbox / dump md / dump origin). Otherwise a
+    # stray f_draw_layout_bbox in config would break API/Gradio runs on Windows.
+    parse_kwargs: dict[str, Any] = dict(
         output_dir=output_dir,
         pdf_file_names=list(pdf_file_names),
         pdf_bytes_list=list(pdf_bytes_list),
@@ -837,6 +840,11 @@ async def run_parse_job(
         table_enable=request_options.table_enable,
         image_analysis=request_options.image_analysis,
         server_url=request_options.server_url,
+        start_page_id=request_options.start_page_id,
+        end_page_id=request_options.end_page_id,
+    )
+    parse_kwargs.update(config)
+    parse_kwargs.update(
         f_draw_layout_bbox=False,
         f_draw_span_bbox=False,
         f_dump_md=request_options.return_md,
@@ -846,9 +854,6 @@ async def run_parse_job(
             request_options.return_original_file and request_options.response_format_zip
         ),
         f_dump_content_list=request_options.return_content_list,
-        start_page_id=request_options.start_page_id,
-        end_page_id=request_options.end_page_id,
-        **config,
     )
 
     if request_options.backend == "pipeline":
