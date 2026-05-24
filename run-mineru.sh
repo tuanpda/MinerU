@@ -5,6 +5,13 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
 export HF_HUB_DISABLE_SYMLINKS=1
+# VPS CPU-only (no GPU): tránh CUDA + giảm lỗi oneDNN "could not create a primitive"
+export MINERU_DEVICE_MODE="${MINERU_DEVICE_MODE:-cpu}"
+export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-}"
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-2}"
+export MKL_NUM_THREADS="${MKL_NUM_THREADS:-2}"
+export OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-2}"
+export ATEN_CPU_CAPABILITY="${ATEN_CPU_CAPABILITY:-DEFAULT}"
 PY="${ROOT}/.venv/bin/python"
 
 if [[ ! -x "$PY" ]]; then
@@ -23,7 +30,7 @@ case "$MODE" in
     exec "${ROOT}/.venv/bin/mineru-gradio" -b pipeline
     ;;
   api)
-    exec "${ROOT}/.venv/bin/mineru-api" --host 127.0.0.1 --port 8000
+    exec "${ROOT}/.venv/bin/python" "${ROOT}/mineru_api_launcher.py" --host 127.0.0.1 --port 8000
     ;;
   *)
     cat <<'EOF'
